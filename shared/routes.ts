@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { employeeSchema } from "./schema";
+import { employeeSchema, departmentSchema } from "./schema";
 
 export const errorSchemas = {
   internal: z.object({ message: z.string() }),
@@ -11,7 +11,10 @@ export const api = {
       method: "GET" as const,
       path: "/api/employees" as const,
       responses: {
-        200: z.array(employeeSchema),
+        200: z.object({
+          employees: z.array(employeeSchema),
+          departments: z.array(departmentSchema),
+        }),
         500: errorSchemas.internal,
       },
     },

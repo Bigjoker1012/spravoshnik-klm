@@ -1,11 +1,11 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: 210 40% 98%; /* Soft slate/gray 50 */
+  --background: 210 40% 98%;
   --foreground: 222 47% 11%;
   --card: 0 0% 100%;
   --card-foreground: 222 47% 11%;
@@ -15,7 +15,6 @@
   --primary-foreground: 210 40% 98%;
   --muted: 210 40% 96.1%;
   --muted-foreground: 215.4 16.3% 46.9%;
-  
   --font-sans: 'Plus Jakarta Sans', sans-serif;
 }
 
@@ -24,19 +23,13 @@
     @apply bg-slate-50 text-slate-900 antialiased;
     font-family: var(--font-sans);
   }
-
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight text-slate-900;
-  }
 }
 
-/* Custom utility for the hexagon shape to ensure clean edges */
 @layer utilities {
   .clip-hexagon {
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
   }
-  
-  /* Prevent scrollbar shift */
+
   html {
     scrollbar-gutter: stable;
   }

@@ -1,170 +1,292 @@
-import { useState, useMemo } from "react";
-import { Search, ArrowLeft, Users, Loader2 } from "lucide-react";
+import { useState, useMemo, useCallback } from "react";
+import { Search, ArrowLeft, Loader2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEmployees } from "@/hooks/use-employees";
+import { useDirectoryData } from "@/hooks/use-employees";
 import { Hexagon } from "@/components/Hexagon";
 import { EmployeeCard } from "@/components/EmployeeCard";
+import { EmployeeDetail } from "@/components/EmployeeDetail";
+import type { Employee } from "@shared/schema";
 
-const DEPARTMENTS = [
-  { name: 'Администрация', color: '#1e3a8a' }, // Deep Blue
-  { name: 'ВЭД', color: '#10b981' },           // Emerald
-  { name: 'Ветпрепараты', color: '#fb7185' },  // Rose
-  { name: 'Агропродукты', color: '#84cc16' },  // Lime
-  { name: 'Сырье', color: '#4338ca' },         // Indigo
-  { name: 'Кадры', color: '#60a5fa' },         // Blue
-  { name: 'Финансы', color: '#eab308' },       // Yellow
-  { name: 'Хоз. служба', color: '#8b5cf6' },   // Violet
-];
+type Screen = "home" | "department" | "detail";
+
+const DEPT_COLORS: Record<string, string> = {
+  "1": "#1e3a8a",
+  "2": "#10b981",
+  "3": "#fb7185",
+  "4": "#84cc16",
+  "5": "#4338ca",
+  "6": "#60a5fa",
+  "7": "#eab308",
+  "8": "#8b5cf6",
+};
+
+const FALLBACK_COLOR = "#6b7280";
 
 export default function Directory() {
-  const { data: employees, isLoading, isError } = useEmployees();
-  
+  const { data, isLoading, isError } = useDirectoryData();
+
+  const [screen, setScreen] = useState<Screen>("home");
+  const [selectedDeptId, setSelectedDeptId] = useState<string | null>(null);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedDept, setSelectedDept] = useState<string | null>(null);
 
-  const isFiltered = searchQuery.length > 0 || selectedDept !== null;
+  const employees = data?.employees || [];
+  const departments = data?.departments || [];
 
-  // Filter logic
-  const filteredEmployees = useMemo(() => {
-    if (!employees) return [];
-    
-    return employees.filter(emp => {
-      // Filter by department if selected
-      if (selectedDept && emp.department !== selectedDept) {
-        return false;
-      }
-      
-      // Filter by search query if typed
-      if (searchQuery) {
-        const q = searchQuery.toLowerCase().trim();
-        return (
-          emp.name.toLowerCase().includes(q) || 
-          emp.position.toLowerCase().includes(q)
-        );
-      }
-      
-      return true;
-    });
-  }, [employees, searchQuery, selectedDept]);
+  const selectedDeptName = useMemo(() => {
+    if (!selectedDeptId) return "";
+    return departments.find((d) => d.id === selectedDeptId)?.name || "";
+  }, [departments, selectedDeptId]);
 
-  const handleClearFilters = () => {
+  const deptEmployees = useMemo(() => {
+    if (!selectedDeptId) return [];
+    return employees.filter((e) => e.departmentId === selectedDeptId);
+  }, [employees, selectedDeptId]);
+
+  const searchResults = useMemo(() => {
+    if (!searchQuery.trim()) return [];
+    const q = searchQuery.toLowerCase().trim();
+    return employees.filter(
+      (e) =>
+        e.name.toLowerCase().includes(q) ||
+        e.position.toLowerCase().includes(q)
+    );
+  }, [employees, searchQuery]);
+
+  const isSearching = searchQuery.trim().length > 0;
+
+  const findSupervisor = useCallback(
+    (emp: Employee): Employee | null => {
+      if (!emp.supervisorCode) return null;
+      return employees.find((e) => e.employeeCode === emp.supervisorCode) || null;
+    },
+    [employees]
+  );
+
+  const handleDeptClick = (deptId: string) => {
+    setSelectedDeptId(deptId);
+    setScreen("department");
     setSearchQuery("");
-    setSelectedDept(null);
   };
 
-  return (
-    <div className="min-h-screen bg-slate-50/50 pb-20">
-      {/* Header Area */}
-      <div className="bg-white border-b border-slate-100 pt-10 pb-6 px-4 sticky top-0 z-20 shadow-sm">
-        <div className="max-w-4xl mx-auto">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/20">
-              <Users className="w-5 h-5" />
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900">
-              KLM Directory
-            </h1>
-          </div>
+  const handleEmployeeClick = (emp: Employee) => {
+    setSelectedEmployee(emp);
+    setScreen("detail");
+  };
 
-          {/* Search Bar */}
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-slate-400 group-focus-within:text-blue-500 transition-colors" />
+  const handleBack = () => {
+    if (screen === "detail") {
+      if (isSearching) {
+        setSelectedEmployee(null);
+        setScreen("home");
+      } else {
+        setSelectedEmployee(null);
+        setScreen("department");
+      }
+    } else if (screen === "department") {
+      setSelectedDeptId(null);
+      setScreen("home");
+    }
+  };
+
+  const handleBackToHome = () => {
+    setScreen("home");
+    setSelectedDeptId(null);
+    setSelectedEmployee(null);
+    setSearchQuery("");
+  };
+
+  if (screen === "detail" && selectedEmployee) {
+    return (
+      <EmployeeDetail
+        employee={selectedEmployee}
+        supervisor={findSupervisor(selectedEmployee)}
+        onBack={handleBack}
+      />
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-slate-50 pb-20">
+      <div className="bg-white border-b border-slate-100 pt-6 pb-5 px-4 sticky top-0 z-20">
+        <div className="max-w-lg mx-auto">
+          {screen === "department" && !isSearching ? (
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                data-testid="button-back-dept"
+                onClick={handleBack}
+                className="inline-flex items-center gap-1 text-slate-600 font-semibold text-sm active:scale-95 transition-transform"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                Назад
+              </button>
+              <h1 className="text-lg font-extrabold text-slate-900 truncate">
+                {selectedDeptName}
+              </h1>
+            </div>
+          ) : (
+            <h1 className="text-xl font-extrabold text-slate-900 mb-4 text-center">
+              Справочник КЛМ
+            </h1>
+          )}
+
+          <div className="relative">
+            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-slate-400" />
             </div>
             <input
+              data-testid="input-search"
               type="text"
-              placeholder="Search by name or position..."
+              placeholder="Поиск по фамилии или должности..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="block w-full pl-11 pr-4 py-4 bg-slate-50 border-2 border-transparent text-slate-900 rounded-2xl shadow-sm placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10 transition-all duration-300 text-lg"
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                if (e.target.value.trim()) {
+                  setScreen("home");
+                  setSelectedDeptId(null);
+                }
+              }}
+              className="block w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl placeholder:text-slate-400 focus:bg-white focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/20 transition-all text-[15px]"
             />
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 mt-8">
-        <AnimatePresence mode="wait">
-          {!isFiltered ? (
-            <motion.div 
-              key="hexagons"
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0, transition: { duration: 0.2 } }}
-              className="mb-12 overflow-hidden"
-            >
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-6 text-center">
-                Browse by Department
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-2 gap-y-4 justify-items-center">
-                {DEPARTMENTS.map((dept, idx) => (
-                  <Hexagon 
-                    key={dept.name}
-                    label={dept.name}
-                    color={dept.color}
-                    onClick={() => setSelectedDept(dept.name)}
-                    delay={idx}
+      <div className="max-w-lg mx-auto px-4 mt-6">
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+            <Loader2 className="w-8 h-8 animate-spin mb-3 text-blue-500" />
+            <p className="font-medium text-sm">Загрузка...</p>
+          </div>
+        ) : isError ? (
+          <div className="bg-red-50 text-red-600 p-5 rounded-2xl border border-red-100 text-center font-medium text-sm">
+            Ошибка загрузки данных. Обновите страницу.
+          </div>
+        ) : isSearching ? (
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <button
+                data-testid="button-back-search"
+                onClick={handleBackToHome}
+                className="inline-flex items-center gap-1 text-slate-600 font-semibold text-sm active:scale-95 transition-transform"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                Назад
+              </button>
+              <span className="text-xs font-semibold text-slate-400">
+                Найдено: {searchResults.length}
+              </span>
+            </div>
+            <div className="space-y-3">
+              {searchResults.length === 0 ? (
+                <div className="text-center py-12 text-slate-400">
+                  <Search className="w-10 h-10 mx-auto mb-3 text-slate-300" />
+                  <p className="font-medium text-sm">Ничего не найдено</p>
+                </div>
+              ) : (
+                searchResults.map((emp, idx) => (
+                  <EmployeeCard
+                    key={emp.id}
+                    employee={emp}
+                    index={idx}
+                    onClick={() => handleEmployeeClick(emp)}
                   />
-                ))}
-              </div>
+                ))
+              )}
+            </div>
+          </div>
+        ) : screen === "home" ? (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key="honeycomb"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <HoneycombGrid
+                departments={departments}
+                colors={DEPT_COLORS}
+                fallbackColor={FALLBACK_COLOR}
+                onDeptClick={handleDeptClick}
+              />
             </motion.div>
-          ) : (
-            <motion.div 
-              key="back-btn"
-              initial={{ opacity: 0, x: -20 }}
+          </AnimatePresence>
+        ) : screen === "department" ? (
+          <AnimatePresence mode="wait">
+            <motion.div
+              key="dept-list"
+              initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20, transition: { duration: 0.2 } }}
-              className="mb-6 flex items-center justify-between"
+              exit={{ opacity: 0, x: -20 }}
+              className="space-y-3"
             >
-              <button 
-                onClick={handleClearFilters}
-                className="inline-flex items-center gap-2 px-4 py-2.5 bg-white text-slate-700 font-semibold rounded-xl border border-slate-200 shadow-sm hover:bg-slate-50 hover:text-slate-900 transition-all active:scale-95"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Назад к сотам
-              </button>
-              
-              <div className="text-sm font-medium text-slate-500 bg-white px-3 py-1.5 rounded-lg border border-slate-100 shadow-sm">
-                Found: <span className="text-slate-900 font-bold">{filteredEmployees.length}</span>
-              </div>
+              {deptEmployees.length === 0 ? (
+                <div className="text-center py-12 text-slate-400">
+                  <p className="font-medium text-sm">Нет сотрудников в этом отделе</p>
+                </div>
+              ) : (
+                deptEmployees.map((emp, idx) => (
+                  <EmployeeCard
+                    key={emp.id}
+                    employee={emp}
+                    index={idx}
+                    onClick={() => handleEmployeeClick(emp)}
+                  />
+                ))
+              )}
             </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Content Area */}
-        <div className="space-y-4">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-400">
-              <Loader2 className="w-8 h-8 animate-spin mb-4 text-blue-500" />
-              <p className="font-medium">Loading directory...</p>
-            </div>
-          ) : isError ? (
-            <div className="bg-red-50 text-red-600 p-6 rounded-2xl border border-red-100 text-center font-medium">
-              Failed to load employees. Please try refreshing the page.
-            </div>
-          ) : filteredEmployees.length === 0 ? (
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="bg-white border border-slate-100 border-dashed p-12 rounded-3xl text-center shadow-sm"
-            >
-              <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="w-8 h-8 text-slate-300" />
-              </div>
-              <h3 className="text-lg font-bold text-slate-900 mb-1">No employees found</h3>
-              <p className="text-slate-500">Try adjusting your search or filters.</p>
-              <button 
-                onClick={handleClearFilters}
-                className="mt-6 text-blue-600 font-semibold hover:text-blue-700 underline underline-offset-4"
-              >
-                Clear all filters
-              </button>
-            </motion.div>
-          ) : (
-            filteredEmployees.map((emp, idx) => (
-              <EmployeeCard key={emp.id} employee={emp} index={idx} />
-            ))
-          )}
-        </div>
+          </AnimatePresence>
+        ) : null}
       </div>
+    </div>
+  );
+}
+
+function HoneycombGrid({
+  departments,
+  colors,
+  fallbackColor,
+  onDeptClick,
+}: {
+  departments: { id: string; name: string }[];
+  colors: Record<string, string>;
+  fallbackColor: string;
+  onDeptClick: (id: string) => void;
+}) {
+  const rows: { id: string; name: string }[][] = [];
+  const sorted = [...departments].sort((a, b) => Number(a.id) - Number(b.id));
+
+  if (sorted.length <= 4) {
+    rows.push(sorted.slice(0, 2));
+    rows.push(sorted.slice(2));
+  } else {
+    rows.push(sorted.slice(0, 2));
+    rows.push(sorted.slice(2, 5));
+    rows.push(sorted.slice(5, 8));
+    if (sorted.length > 8) {
+      rows.push(sorted.slice(8));
+    }
+  }
+
+  return (
+    <div className="flex flex-col items-center py-4">
+      {rows.map((row, rowIdx) => (
+        <div
+          key={rowIdx}
+          className="flex justify-center gap-1"
+          style={{ marginTop: rowIdx > 0 ? "-14px" : "0" }}
+        >
+          {row.map((dept, i) => (
+            <Hexagon
+              key={dept.id}
+              label={dept.name}
+              color={colors[dept.id] || fallbackColor}
+              onClick={() => onDeptClick(dept.id)}
+              delay={rowIdx * 3 + i}
+            />
+          ))}
+        </div>
+      ))}
     </div>
   );
 }

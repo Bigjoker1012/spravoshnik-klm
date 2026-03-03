@@ -7,13 +7,13 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  app.get(api.employees.list.path, async (req, res) => {
+  app.get(api.employees.list.path, async (_req, res) => {
     try {
-      const employees = await storage.getEmployees();
-      res.status(200).json(employees);
+      const data = await storage.getData();
+      res.status(200).json(data);
     } catch (err) {
-      console.error("Failed to fetch employees:", err);
-      res.status(500).json({ message: "Failed to fetch employees" });
+      console.error("Failed to fetch data:", err);
+      res.status(500).json({ message: "Failed to fetch data" });
     }
   });
 

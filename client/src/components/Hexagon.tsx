@@ -10,24 +10,20 @@ interface HexagonProps {
 export function Hexagon({ label, color, onClick, delay = 0 }: HexagonProps) {
   return (
     <motion.button
+      data-testid={`hex-${label}`}
       initial={{ scale: 0.8, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
-      transition={{ 
-        type: "spring", 
-        stiffness: 260, 
-        damping: 20, 
-        delay: delay * 0.05 
-      }}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
+      transition={{ type: "spring", stiffness: 260, damping: 20, delay: delay * 0.06 }}
+      whileHover={{ scale: 1.08 }}
+      whileTap={{ scale: 0.93 }}
       onClick={onClick}
-      className="relative flex items-center justify-center focus:outline-none focus-visible:ring-4 focus-visible:ring-slate-300 rounded-full"
+      className="relative flex items-center justify-center focus:outline-none"
     >
-      <div 
-        className="w-[100px] h-[115px] clip-hexagon flex items-center justify-center p-3 transition-colors duration-300 shadow-xl"
+      <div
+        className="w-[100px] h-[115px] clip-hexagon flex items-center justify-center p-3"
         style={{ backgroundColor: color }}
       >
-        <span className="text-white text-xs font-semibold leading-tight text-center drop-shadow-md">
+        <span className="text-white text-[11px] font-bold leading-tight text-center drop-shadow-md">
           {label}
         </span>
       </div>
