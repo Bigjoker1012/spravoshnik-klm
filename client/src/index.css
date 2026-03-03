@@ -28,9 +28,16 @@
 @layer utilities {
   .clip-hexagon {
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    width: min(26vw, 105px);
+    height: min(30vw, 121px);
+  }
+
+  .hex-btn {
+    width: min(26vw, 105px);
   }
 
   html {
     scrollbar-gutter: stable;
+    overflow-x: hidden;
   }
 }

@@ -107,8 +107,8 @@ export default function Directory() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
-      <div className="bg-white border-b border-slate-100 pt-6 pb-5 px-4 sticky top-0 z-20">
+    <div className="min-h-[100dvh] bg-slate-50 pb-6">
+      <div className="bg-white border-b border-slate-100 pt-[max(env(safe-area-inset-top),12px)] pb-4 px-4 sticky top-0 z-20">
         <div className="max-w-lg mx-auto">
           {screen === "department" && !isSearching ? (
             <div className="flex items-center gap-3 mb-4">
@@ -255,14 +255,15 @@ function HoneycombGrid({
 }) {
   const sorted = [...departments].sort((a, b) => Number(a.id) - Number(b.id));
 
-  const row1 = sorted.slice(0, 2);
-  const row2 = sorted.slice(2, 6);
-  const row3 = sorted.slice(6, 8);
+  const top = sorted.slice(0, 1);
+  const mid1 = sorted.slice(1, 4);
+  const mid2 = sorted.slice(4, 7);
+  const bottom = sorted.slice(7, 8);
 
   return (
-    <div className="flex flex-col items-center py-4">
-      <div className="flex justify-center gap-1">
-        {row1.map((dept, i) => (
+    <div className="flex flex-col items-center py-2">
+      <div className="flex justify-center gap-[2px]">
+        {top.map((dept, i) => (
           <Hexagon
             key={dept.id}
             label={dept.name}
@@ -272,25 +273,36 @@ function HoneycombGrid({
           />
         ))}
       </div>
-      <div className="flex justify-center gap-1 -mt-[14px]">
-        {row2.map((dept, i) => (
+      <div className="flex justify-center gap-[2px]" style={{ marginTop: "min(-3.5vw, -14px)" }}>
+        {mid1.map((dept, i) => (
           <Hexagon
             key={dept.id}
             label={dept.name}
             color={colors[dept.id] || fallbackColor}
             onClick={() => onDeptClick(dept.id)}
-            delay={i + 2}
+            delay={i + 1}
           />
         ))}
       </div>
-      <div className="flex justify-center gap-1 -mt-[14px]">
-        {row3.map((dept, i) => (
+      <div className="flex justify-center gap-[2px]" style={{ marginTop: "min(-3.5vw, -14px)" }}>
+        {mid2.map((dept, i) => (
           <Hexagon
             key={dept.id}
             label={dept.name}
             color={colors[dept.id] || fallbackColor}
             onClick={() => onDeptClick(dept.id)}
-            delay={i + 6}
+            delay={i + 4}
+          />
+        ))}
+      </div>
+      <div className="flex justify-center gap-[2px]" style={{ marginTop: "min(-3.5vw, -14px)" }}>
+        {bottom.map((dept, i) => (
+          <Hexagon
+            key={dept.id}
+            label={dept.name}
+            color={colors[dept.id] || fallbackColor}
+            onClick={() => onDeptClick(dept.id)}
+            delay={i + 7}
           />
         ))}
       </div>

@@ -17,13 +17,13 @@ export function Hexagon({ label, color, onClick, delay = 0 }: HexagonProps) {
       whileHover={{ scale: 1.08 }}
       whileTap={{ scale: 0.93 }}
       onClick={onClick}
-      className="relative flex items-center justify-center focus:outline-none"
+      className="relative flex items-center justify-center focus:outline-none hex-btn"
     >
       <div
-        className="w-[100px] h-[115px] clip-hexagon flex items-center justify-center p-3"
+        className="clip-hexagon flex items-center justify-center p-2"
         style={{ backgroundColor: color }}
       >
-        <span className="text-white text-[11px] font-bold leading-tight text-center drop-shadow-md">
+        <span className="text-white text-[10px] sm:text-[11px] font-bold leading-tight text-center drop-shadow-md">
           {label}
         </span>
       </div>
