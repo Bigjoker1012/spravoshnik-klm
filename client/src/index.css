@@ -20,20 +20,30 @@
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    @apply text-slate-900 antialiased;
     font-family: var(--font-sans);
+    background-color: #e8f5f0;
   }
 }
 
 @layer utilities {
   .clip-hexagon {
     clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-    width: min(26vw, 105px);
-    height: min(30vw, 121px);
+  }
+
+  .hex-border {
+    width: min(27vw, 110px);
+    height: min(31vw, 127px);
+    background-color: #5D3A1A;
+  }
+
+  .hex-inner {
+    width: min(25vw, 102px);
+    height: min(29vw, 118px);
   }
 
   .hex-btn {
-    width: min(26vw, 105px);
+    width: min(27vw, 110px);
   }
 
   html {

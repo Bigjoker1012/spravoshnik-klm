@@ -107,8 +107,8 @@ export default function Directory() {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-slate-50 pb-6">
-      <div className="bg-white border-b border-slate-100 pt-[max(env(safe-area-inset-top),12px)] pb-4 px-4 sticky top-0 z-20">
+    <div className="min-h-[100dvh] pb-6" style={{ backgroundColor: '#e8f5f0' }}>
+      <div className="border-b border-emerald-200 pt-[max(env(safe-area-inset-top),12px)] pb-4 px-4 sticky top-0 z-20" style={{ backgroundColor: '#f0faf6' }}>
         <div className="max-w-lg mx-auto">
           {screen === "department" && !isSearching ? (
             <div className="flex items-center gap-3 mb-4">

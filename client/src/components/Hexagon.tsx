@@ -19,13 +19,12 @@ export function Hexagon({ label, color, onClick, delay = 0 }: HexagonProps) {
       onClick={onClick}
       className="relative flex items-center justify-center focus:outline-none hex-btn"
     >
-      <div
-        className="clip-hexagon flex items-center justify-center p-2"
-        style={{ backgroundColor: color }}
-      >
-        <span className="text-white text-[10px] sm:text-[11px] font-bold leading-tight text-center drop-shadow-md">
-          {label}
-        </span>
+      <div className="clip-hexagon hex-border flex items-center justify-center">
+        <div className="clip-hexagon hex-inner flex items-center justify-center p-2" style={{ backgroundColor: color }}>
+          <span className="text-white text-[10px] sm:text-[11px] font-bold leading-tight text-center drop-shadow-md">
+            {label}
+          </span>
+        </div>
       </div>
     </motion.button>
   );
