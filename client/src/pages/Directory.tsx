@@ -253,40 +253,47 @@ function HoneycombGrid({
   fallbackColor: string;
   onDeptClick: (id: string) => void;
 }) {
-  const rows: { id: string; name: string }[][] = [];
   const sorted = [...departments].sort((a, b) => Number(a.id) - Number(b.id));
 
-  if (sorted.length <= 4) {
-    rows.push(sorted.slice(0, 2));
-    rows.push(sorted.slice(2));
-  } else {
-    rows.push(sorted.slice(0, 2));
-    rows.push(sorted.slice(2, 5));
-    rows.push(sorted.slice(5, 8));
-    if (sorted.length > 8) {
-      rows.push(sorted.slice(8));
-    }
-  }
+  const row1 = sorted.slice(0, 2);
+  const row2 = sorted.slice(2, 6);
+  const row3 = sorted.slice(6, 8);
 
   return (
     <div className="flex flex-col items-center py-4">
-      {rows.map((row, rowIdx) => (
-        <div
-          key={rowIdx}
-          className="flex justify-center gap-1"
-          style={{ marginTop: rowIdx > 0 ? "-14px" : "0" }}
-        >
-          {row.map((dept, i) => (
-            <Hexagon
-              key={dept.id}
-              label={dept.name}
-              color={colors[dept.id] || fallbackColor}
-              onClick={() => onDeptClick(dept.id)}
-              delay={rowIdx * 3 + i}
-            />
-          ))}
-        </div>
-      ))}
+      <div className="flex justify-center gap-1">
+        {row1.map((dept, i) => (
+          <Hexagon
+            key={dept.id}
+            label={dept.name}
+            color={colors[dept.id] || fallbackColor}
+            onClick={() => onDeptClick(dept.id)}
+            delay={i}
+          />
+        ))}
+      </div>
+      <div className="flex justify-center gap-1 -mt-[14px]">
+        {row2.map((dept, i) => (
+          <Hexagon
+            key={dept.id}
+            label={dept.name}
+            color={colors[dept.id] || fallbackColor}
+            onClick={() => onDeptClick(dept.id)}
+            delay={i + 2}
+          />
+        ))}
+      </div>
+      <div className="flex justify-center gap-1 -mt-[14px]">
+        {row3.map((dept, i) => (
+          <Hexagon
+            key={dept.id}
+            label={dept.name}
+            color={colors[dept.id] || fallbackColor}
+            onClick={() => onDeptClick(dept.id)}
+            delay={i + 6}
+          />
+        ))}
+      </div>
     </div>
   );
 }

@@ -68,6 +68,14 @@ export class MemStorage implements IStorage {
       const name = cols[0]?.trim();
       if (!name) continue;
 
+      let photo = cols[10]?.trim() || undefined;
+      if (photo && photo.includes('drive.google.com/file/d/')) {
+        const match = photo.match(/\/d\/([^/]+)/);
+        if (match) {
+          photo = `https://lh3.googleusercontent.com/d/${match[1]}`;
+        }
+      }
+
       employees.push({
         id: String(i),
         name,
@@ -80,7 +88,7 @@ export class MemStorage implements IStorage {
         internalExt: cols[7]?.trim() || undefined,
         email: cols[8]?.trim() || undefined,
         birthday: cols[9]?.trim() || undefined,
-        photo: cols[10]?.trim() || undefined,
+        photo,
       });
     }
 

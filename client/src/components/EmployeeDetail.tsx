@@ -20,7 +20,6 @@ export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailP
       href: `tel:${phoneForLinks}`,
       icon: Phone,
       label: "Позвонить",
-      sublabel: phoneForLinks || "",
       bg: "bg-blue-50",
       text: "text-blue-600",
     },
@@ -29,7 +28,6 @@ export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailP
       href: `https://wa.me/${cleanPhone}`,
       icon: MessageCircle,
       label: "WhatsApp",
-      sublabel: phoneForLinks || "",
       bg: "bg-emerald-50",
       text: "text-emerald-600",
     },
@@ -38,7 +36,6 @@ export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailP
       href: `https://t.me/${cleanPhone}`,
       icon: Send,
       label: "Telegram",
-      sublabel: phoneForLinks || "",
       bg: "bg-sky-50",
       text: "text-sky-600",
     },
@@ -47,7 +44,6 @@ export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailP
       href: `mailto:${employee.email}`,
       icon: Mail,
       label: "E-mail",
-      sublabel: employee.email || "",
       bg: "bg-purple-50",
       text: "text-purple-600",
     },
@@ -97,21 +93,6 @@ export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailP
           <p className="text-slate-500 font-medium mt-1">{employee.position}</p>
         </div>
 
-        {supervisor && (
-          <div className="bg-white rounded-2xl p-4 border border-slate-100 mb-6">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Руководитель</p>
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center shrink-0">
-                <User className="w-5 h-5 text-slate-400" />
-              </div>
-              <div>
-                <p className="font-bold text-slate-900 text-sm" data-testid="text-supervisor-name">{supervisor.name}</p>
-                <p className="text-slate-500 text-xs">{supervisor.position}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="space-y-3">
           {employee.workPhone && (
             <InfoRow label="Тел. рабочий" value={employee.workPhone} />
@@ -145,6 +126,15 @@ export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailP
             </a>
           ))}
         </div>
+
+        {supervisor && (
+          <div className="mt-8 pt-4 border-t border-slate-100 flex items-center gap-2">
+            <span className="text-xs text-slate-400">Руководитель:</span>
+            <span className="text-xs text-slate-500" data-testid="text-supervisor-name">
+              {supervisor.name}, {supervisor.position}
+            </span>
+          </div>
+        )}
       </div>
     </motion.div>
   );
