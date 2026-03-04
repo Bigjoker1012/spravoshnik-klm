@@ -32,8 +32,8 @@ export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailP
       text: "text-emerald-600",
     },
     {
-      available: !!phoneForLinks,
-      href: `https://t.me/${cleanPhone}`,
+      available: !!cleanPhone,
+      href: `https://t.me/+${cleanPhone}`,
       icon: Send,
       label: "Telegram",
       bg: "bg-sky-50",
@@ -55,7 +55,7 @@ export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailP
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -30 }}
       transition={{ duration: 0.25 }}
-      className="min-h-screen bg-slate-50 pb-20"
+      className="min-h-screen pb-20" style={{ backgroundColor: '#e8f5f0' }}
     >
       <div className="bg-white border-b border-slate-100 pt-4 pb-4 px-4 sticky top-0 z-20">
         <div className="max-w-lg mx-auto">
