@@ -18,6 +18,7 @@ const DEPT_COLORS: Record<string, string> = {
   "6": "#60a5fa",
   "7": "#eab308",
   "8": "#8b5cf6",
+  "9": "#f97316",
 };
 
 const FALLBACK_COLOR = "#6b7280";
@@ -40,7 +41,10 @@ export default function Directory() {
 
   const deptEmployees = useMemo(() => {
     if (!selectedDeptId) return [];
-    return employees.filter((e) => e.departmentId === selectedDeptId);
+    return employees.filter((e) => {
+      const ids = e.departmentId.split(/[,;\s]+/).map((s) => s.trim()).filter(Boolean);
+      return ids.includes(selectedDeptId);
+    });
   }, [employees, selectedDeptId]);
 
   const searchResults = useMemo(() => {
@@ -258,7 +262,7 @@ function HoneycombGrid({
   const top = sorted.slice(0, 1);
   const mid1 = sorted.slice(1, 4);
   const mid2 = sorted.slice(4, 7);
-  const bottom = sorted.slice(7, 8);
+  const bottom = sorted.slice(7, 9);
 
   return (
     <div className="flex flex-col items-center py-2">
