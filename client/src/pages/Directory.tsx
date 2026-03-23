@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { Search, ArrowLeft, Loader2 } from "lucide-react";
+import { Search, ArrowLeft, Loader2, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDirectoryData } from "@/hooks/use-employees";
 import { Hexagon } from "@/components/Hexagon";
@@ -23,7 +23,7 @@ const DEPT_COLORS: Record<string, string> = {
 
 const FALLBACK_COLOR = "#6b7280";
 
-export default function Directory() {
+export default function Directory({ onLogout }: { onLogout?: () => void }) {
   const { data, isLoading, isError } = useDirectoryData();
 
   const [screen, setScreen] = useState<Screen>("home");
@@ -124,14 +124,27 @@ export default function Directory() {
                 <ArrowLeft className="w-5 h-5" />
                 Назад
               </button>
-              <h1 className="text-lg font-extrabold text-slate-900 truncate">
+              <h1 className="text-lg font-extrabold text-slate-900 truncate flex-1">
                 {selectedDeptName}
               </h1>
             </div>
           ) : (
-            <h1 className="text-xl font-extrabold text-slate-900 mb-4 text-center">
-              Справочник КЛМ
-            </h1>
+            <div className="flex items-center justify-between mb-4">
+              <div className="w-8" />
+              <h1 className="text-xl font-extrabold text-slate-900">
+                Справочник КЛМ
+              </h1>
+              {onLogout && (
+                <button
+                  data-testid="button-logout"
+                  onClick={onLogout}
+                  title="Выйти"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-600 active:scale-95 transition-all"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              )}
+            </div>
           )}
 
           <div className="relative">
