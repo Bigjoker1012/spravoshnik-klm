@@ -41,6 +41,12 @@ export async function registerRoutes(
     res.json({ authenticated: !!req.session?.authenticated });
   });
 
+  app.get("/api/config", (_req: Request, res: Response) => {
+    res.json({
+      companyName: process.env.COMPANY_NAME || "Компания",
+    });
+  });
+
   app.get(api.employees.list.path, requireAuth, async (_req, res) => {
     try {
       const data = await storage.getData();

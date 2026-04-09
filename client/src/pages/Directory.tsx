@@ -23,7 +23,7 @@ const DEPT_COLORS: Record<string, string> = {
 
 const FALLBACK_COLOR = "#6b7280";
 
-export default function Directory({ onLogout }: { onLogout?: () => void }) {
+export default function Directory({ onLogout, companyName = "Компания" }: { onLogout?: () => void; companyName?: string }) {
   const { data, isLoading, isError } = useDirectoryData();
 
   const [screen, setScreen] = useState<Screen>("home");
@@ -132,7 +132,7 @@ export default function Directory({ onLogout }: { onLogout?: () => void }) {
             <div className="flex items-center justify-between mb-4">
               <div className="w-8" />
               <h1 className="text-xl font-extrabold text-slate-900">
-                Справочник КЛМ
+                Справочник {companyName}
               </h1>
               {onLogout && (
                 <button

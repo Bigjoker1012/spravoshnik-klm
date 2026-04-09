@@ -8,10 +8,10 @@ import NotFound from "@/pages/not-found";
 import Directory from "./pages/Directory";
 import LoginPage from "./pages/LoginPage";
 
-function Router({ onLogout }: { onLogout: () => void }) {
+function Router({ onLogout, companyName }: { onLogout: () => void; companyName: string }) {
   return (
     <Switch>
-      <Route path="/" component={() => <Directory onLogout={onLogout} />} />
+      <Route path="/" component={() => <Directory onLogout={onLogout} companyName={companyName} />} />
       <Route component={NotFound} />
     </Switch>
   );
@@ -19,12 +19,16 @@ function Router({ onLogout }: { onLogout: () => void }) {
 
 function App() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
+  const [companyName, setCompanyName] = useState("Компания");
 
   useEffect(() => {
-    fetch("/api/auth/check")
-      .then((r) => r.json())
-      .then((d) => setAuthenticated(d.authenticated))
-      .catch(() => setAuthenticated(false));
+    Promise.all([
+      fetch("/api/auth/check").then((r) => r.json()),
+      fetch("/api/config").then((r) => r.json()),
+    ]).then(([auth, config]) => {
+      setAuthenticated(auth.authenticated);
+      if (config.companyName) setCompanyName(config.companyName);
+    }).catch(() => setAuthenticated(false));
   }, []);
 
   const handleLogin = () => setAuthenticated(true);
@@ -49,9 +53,9 @@ function App() {
       <TooltipProvider>
         <Toaster />
         {authenticated ? (
-          <Router onLogout={handleLogout} />
+          <Router onLogout={handleLogout} companyName={companyName} />
         ) : (
-          <LoginPage onLogin={handleLogin} />
+          <LoginPage onLogin={handleLogin} companyName={companyName} />
         )}
       </TooltipProvider>
     </QueryClientProvider>

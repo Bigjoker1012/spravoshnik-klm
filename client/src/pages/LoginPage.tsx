@@ -3,9 +3,10 @@ import { Lock } from "lucide-react";
 
 interface LoginPageProps {
   onLogin: () => void;
+  companyName?: string;
 }
 
-export default function LoginPage({ onLogin }: LoginPageProps) {
+export default function LoginPage({ onLogin, companyName = "Компания" }: LoginPageProps) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,7 +48,7 @@ export default function LoginPage({ onLogin }: LoginPageProps) {
             <Lock className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-extrabold text-slate-900">
-            Справочник КЛМ
+            Справочник {companyName}
           </h1>
           <p className="text-sm text-slate-500 mt-1">Введите пароль для входа</p>
         </div>

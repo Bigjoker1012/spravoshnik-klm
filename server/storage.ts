@@ -33,7 +33,10 @@ export class MemStorage implements IStorage {
       return this.cache;
     }
 
-    const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1nualyTma75WZ4eZlVuPEPMDqz94qmCx5blby-9tZCOU/export?format=csv';
+    const SHEET_URL = process.env.SHEET_URL || '';
+    if (!SHEET_URL) {
+      throw new Error('SHEET_URL environment variable is not set');
+    }
     const response = await fetch(SHEET_URL);
     if (!response.ok) {
       throw new Error(`Failed to fetch sheet: ${response.statusText}`);
