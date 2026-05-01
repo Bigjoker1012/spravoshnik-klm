@@ -35,24 +35,11 @@ function App() {
     setAuthenticated(false);
   };
 
-  if (authenticated === null) {
-    return (
-      <div
-        className="min-h-[100dvh] flex items-center justify-center"
-        style={{ backgroundColor: "#e8f5f0" }}
-      />
-    );
-  }
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
-        {authenticated ? (
-          <Router onLogout={handleLogout} />
-        ) : (
-          <LoginPage onLogin={handleLogin} />
-        )}
+        <Router onLogout={handleLogout} />
       </TooltipProvider>
     </QueryClientProvider>
   );
