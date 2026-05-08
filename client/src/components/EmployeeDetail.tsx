@@ -116,7 +116,7 @@ export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailP
             <a
               key={action.label}
               href={action.href}
-              target="_blank"
+              target={action.href.startsWith('mailto:') || action.href.startsWith('tel:') ? '_self' : '_blank'}
               rel="noopener noreferrer"
               data-testid={`button-action-${action.label.toLowerCase()}`}
               className={`${action.bg} rounded-2xl p-4 flex flex-col items-center gap-2 active:scale-95 transition-transform`}
