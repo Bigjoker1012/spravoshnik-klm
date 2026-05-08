@@ -5,9 +5,10 @@ import { useDirectoryData } from "@/hooks/use-employees";
 import { Hexagon } from "@/components/Hexagon";
 import { EmployeeCard } from "@/components/EmployeeCard";
 import { EmployeeDetail } from "@/components/EmployeeDetail";
+import RequisitesPage from "@/pages/RequisitesPage";
 import type { Employee } from "@shared/schema";
 
-type Screen = "home" | "department" | "detail";
+type Screen = "home" | "department" | "detail" | "requisites";
 
 const DEPT_COLORS: Record<string, string> = {
   "1": "#1e3a8a",
@@ -19,6 +20,7 @@ const DEPT_COLORS: Record<string, string> = {
   "7": "#eab308",
   "8": "#8b5cf6",
   "9": "#f97316",
+  "requisites": "#c0392b",
 };
 
 const FALLBACK_COLOR = "#6b7280";
@@ -68,6 +70,11 @@ export default function Directory({ onLogout }: { onLogout?: () => void }) {
   );
 
   const handleDeptClick = (deptId: string) => {
+    if (deptId === "requisites") {
+      setScreen("requisites");
+      setSearchQuery("");
+      return;
+    }
     setSelectedDeptId(deptId);
     setScreen("department");
     setSearchQuery("");
@@ -108,6 +115,10 @@ export default function Directory({ onLogout }: { onLogout?: () => void }) {
         onBack={handleBack}
       />
     );
+  }
+
+  if (screen === "requisites") {
+    return <RequisitesPage onBack={handleBackToHome} />;
   }
 
   return (
@@ -276,6 +287,7 @@ function HoneycombGrid({
   const mid1 = sorted.slice(1, 4);
   const mid2 = sorted.slice(4, 7);
   const bottom = sorted.slice(7, 9);
+  const requisites = { id: "requisites", name: "Реквизиты КЛМ и СИ" };
 
   return (
     <div className="flex flex-col items-center py-2">
@@ -322,6 +334,15 @@ function HoneycombGrid({
             delay={i + 7}
           />
         ))}
+      </div>
+      <div className="flex justify-center gap-[2px]" style={{ marginTop: "min(-3.5vw, -14px)" }}>
+        <Hexagon
+          key={requisites.id}
+          label={requisites.name}
+          color={colors[requisites.id] || fallbackColor}
+          onClick={() => onDeptClick(requisites.id)}
+          delay={9}
+        />
       </div>
     </div>
   );
