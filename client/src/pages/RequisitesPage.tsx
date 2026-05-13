@@ -9,12 +9,12 @@ const FILES = [
   {
     id: "klm",
     name: "Реквизиты КЛМ",
-    driveId: "1UfchBqa3LKa1Kj7eHIXKGJBSFFIY8z4r",
+    driveId: "1hCXBTCYkpnNiaKVp55qS2pVtcdsnqdjI",
   },
   {
     id: "si",
     name: "Реквизиты СИ",
-    driveId: "1hCXBTCYkpnNiaKVp55qS2pVtcdsnqdjI",
+    driveId: "1UfchBqa3LKa1Kj7eHIXKGJBSFFIY8z4r",
   },
 ];
 
