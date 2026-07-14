@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { X, Download, Share2, Link2, Check } from "lucide-react";
+import { X, Download, Share2, Link2, Check, Mail, MessageCircle } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SocialQRProps {
@@ -53,10 +53,10 @@ export function SocialQR({ label, url, color, icon }: SocialQRProps) {
         } else {
           await navigator.share({ title: `QR-код ${label}`, text: `${label}`, url });
         }
+        return;
       } catch {}
-    } else {
-      handleDownload();
     }
+    handleDownload();
   }, [label, url, svgToPngBlob, handleDownload]);
 
   const handleCopyLink = useCallback(async () => {
@@ -75,6 +75,8 @@ export function SocialQR({ label, url, color, icon }: SocialQRProps) {
       setTimeout(() => setCopied(false), 2000);
     }
   }, [url]);
+
+  const hasNativeShare = typeof navigator !== "undefined" && !!navigator.share;
 
   return (
     <>
@@ -121,14 +123,37 @@ export function SocialQR({ label, url, color, icon }: SocialQRProps) {
               </div>
 
               <div className="flex flex-col gap-2 w-full">
-                <button
-                  onClick={handleShare}
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-white active:opacity-80"
-                  style={{ backgroundColor: color }}
-                >
-                  <Share2 className="w-4 h-4" />
-                  Поделиться
-                </button>
+                {hasNativeShare ? (
+                  <button
+                    onClick={handleShare}
+                    className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-white active:opacity-80"
+                    style={{ backgroundColor: color }}
+                  >
+                    <Share2 className="w-4 h-4" />
+                    Поделиться
+                  </button>
+                ) : (
+                  <>
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(`Сканируйте QR-код для перехода в ${label}: ${url}`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-white active:opacity-80"
+                      style={{ backgroundColor: "#25D366" }}
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      WhatsApp
+                    </a>
+                    <a
+                      href={`mailto:?subject=${encodeURIComponent(`QR-код ${label}`)}&body=${encodeURIComponent(`Сканируйте QR-код: ${url}`)}`}
+                      className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-white active:opacity-80"
+                      style={{ backgroundColor: "#6b7280" }}
+                    >
+                      <Mail className="w-4 h-4" />
+                      E-mail
+                    </a>
+                  </>
+                )}
 
                 <button
                   onClick={handleCopyLink}
