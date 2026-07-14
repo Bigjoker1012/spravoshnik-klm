@@ -1,5 +1,6 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
-import { Phone, MessageCircle, Send, Mail, User, ArrowLeft } from "lucide-react";
+import { Phone, MessageCircle, Send, Mail, User, ArrowLeft, Copy, Check } from "lucide-react";
 import type { Employee } from "@shared/schema";
 
 interface EmployeeDetailProps {
@@ -8,11 +9,33 @@ interface EmployeeDetailProps {
   onBack: () => void;
 }
 
+function isMobile(): boolean {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailProps) {
+  const [tgCopied, setTgCopied] = useState(false);
   const initials = employee.name.split(" ").map((w) => w[0]).join("").slice(0, 2);
 
   const phoneForLinks = employee.workPhone || employee.personalPhone;
   const cleanPhone = phoneForLinks ? phoneForLinks.replace(/\D/g, "") : "";
+  const tgUrl = `https://t.me/+${cleanPhone}`;
+  const mobile = isMobile();
+
+  const copyTgLink = async () => {
+    try {
+      await navigator.clipboard.writeText(tgUrl);
+    } catch {
+      const input = document.createElement("input");
+      input.value = tgUrl;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+    }
+    setTgCopied(true);
+    setTimeout(() => setTgCopied(false), 2000);
+  };
 
   const actions = [
     {
@@ -32,8 +55,8 @@ export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailP
       text: "text-emerald-600",
     },
     {
-      available: !!cleanPhone,
-      href: `https://t.me/+${cleanPhone}`,
+      available: !!cleanPhone && mobile,
+      href: tgUrl,
       icon: Send,
       label: "Telegram",
       bg: "bg-sky-50",
@@ -126,6 +149,25 @@ export function EmployeeDetail({ employee, supervisor, onBack }: EmployeeDetailP
             </a>
           ))}
         </div>
+
+        {!mobile && cleanPhone && (
+          <button
+            onClick={copyTgLink}
+            className="mt-3 w-full rounded-2xl p-3 flex items-center justify-center gap-2 active:scale-95 transition-transform bg-sky-50"
+          >
+            {tgCopied ? (
+              <>
+                <Check className="w-5 h-5 text-sky-600" />
+                <span className="font-bold text-sm text-sky-600">Ссылка скопирована!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-5 h-5 text-sky-600" />
+                <span className="font-bold text-sm text-sky-600">Скопировать ссылку Telegram</span>
+              </>
+            )}
+          </button>
+        )}
 
         {supervisor && (
           <div className="mt-8 pt-4 border-t border-slate-100 flex items-center gap-2">
