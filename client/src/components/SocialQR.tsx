@@ -10,6 +10,10 @@ interface SocialQRProps {
   icon: React.ReactNode;
 }
 
+function isMobile(): boolean {
+  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+}
+
 export function SocialQR({ label, url, color, icon }: SocialQRProps) {
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -43,21 +47,28 @@ export function SocialQR({ label, url, color, icon }: SocialQRProps) {
     URL.revokeObjectURL(link.href);
   }, [label, svgToPngBlob]);
 
-  const handleShare = useCallback(async () => {
+  const handleNativeShare = useCallback(async () => {
     const blob = await svgToPngBlob();
-    if (navigator.share) {
-      try {
-        if (blob && navigator.canShare?.({ files: [new File([blob], "qr.png", { type: "image/png" })] })) {
-          const file = new File([blob], `qr-${label.replace(/\s+/g, "-").toLowerCase()}.png`, { type: "image/png" });
-          await navigator.share({ files: [file], title: `QR-код ${label}` });
-        } else {
-          await navigator.share({ title: `QR-код ${label}`, text: `${label}`, url });
-        }
-        return;
-      } catch {}
+    if (!navigator.share) return false;
+    try {
+      if (blob && navigator.canShare?.({ files: [new File([blob], "qr.png", { type: "image/png" })] })) {
+        const file = new File([blob], `qr-${label.replace(/\s+/g, "-").toLowerCase()}.png`, { type: "image/png" });
+        await navigator.share({ files: [file], title: `QR-код ${label}` });
+      } else {
+        await navigator.share({ title: `QR-код ${label}`, text: `${label}`, url });
+      }
+      return true;
+    } catch {
+      return false;
     }
-    handleDownload();
-  }, [label, url, svgToPngBlob, handleDownload]);
+  }, [label, url, svgToPngBlob]);
+
+  const handleShareClick = useCallback(async () => {
+    const shared = await handleNativeShare();
+    if (!shared) {
+      handleDownload();
+    }
+  }, [handleNativeShare, handleDownload]);
 
   const handleCopyLink = useCallback(async () => {
     try {
@@ -76,7 +87,7 @@ export function SocialQR({ label, url, color, icon }: SocialQRProps) {
     }
   }, [url]);
 
-  const hasNativeShare = typeof navigator !== "undefined" && !!navigator.share;
+  const mobile = isMobile();
 
   return (
     <>
@@ -123,16 +134,18 @@ export function SocialQR({ label, url, color, icon }: SocialQRProps) {
               </div>
 
               <div className="flex flex-col gap-2 w-full">
-                {hasNativeShare ? (
+                {mobile && (
                   <button
-                    onClick={handleShare}
+                    onClick={handleShareClick}
                     className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-white active:opacity-80"
                     style={{ backgroundColor: color }}
                   >
                     <Share2 className="w-4 h-4" />
                     Поделиться
                   </button>
-                ) : (
+                )}
+
+                {!mobile && (
                   <>
                     <a
                       href={`https://wa.me/?text=${encodeURIComponent(`Сканируйте QR-код для перехода в ${label}: ${url}`)}`}
