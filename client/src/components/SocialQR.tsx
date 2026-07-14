@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { X, Download, Share2 } from "lucide-react";
+import { X, Download, Share2, Link2, Check } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface SocialQRProps {
@@ -12,52 +12,69 @@ interface SocialQRProps {
 
 export function SocialQR({ label, url, color, icon }: SocialQRProps) {
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
   const qrRef = useRef<HTMLDivElement>(null);
 
-  const handleDownload = useCallback(() => {
-    const svgEl = qrRef.current?.querySelector("svg");
-    if (!svgEl) return;
-    const svgData = new XMLSerializer().serializeToString(svgEl);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx?.drawImage(img, 0, 0);
-      const link = document.createElement("a");
-      link.download = `qr-${label.replace(/\s+/g, "-").toLowerCase()}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    };
-    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
-  }, [label]);
+  const svgToPngBlob = useCallback((): Promise<Blob | null> => {
+    return new Promise((resolve) => {
+      const svgEl = qrRef.current?.querySelector("svg");
+      if (!svgEl) return resolve(null);
+      const svgData = new XMLSerializer().serializeToString(svgEl);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx?.drawImage(img, 0, 0);
+        canvas.toBlob((blob) => resolve(blob), "image/png");
+      };
+      img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
+    });
+  }, []);
+
+  const handleDownload = useCallback(async () => {
+    const blob = await svgToPngBlob();
+    if (!blob) return;
+    const link = document.createElement("a");
+    link.download = `qr-${label.replace(/\s+/g, "-").toLowerCase()}.png`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }, [label, svgToPngBlob]);
 
   const handleShare = useCallback(async () => {
-    const svgEl = qrRef.current?.querySelector("svg");
-    if (!svgEl) return;
-    const svgData = new XMLSerializer().serializeToString(svgEl);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.onload = async () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx?.drawImage(img, 0, 0);
-      canvas.toBlob(async (blob) => {
-        if (!blob) return;
-        const file = new File([blob], `qr-${label.replace(/\s+/g, "-").toLowerCase()}.png`, { type: "image/png" });
-        if (navigator.share && navigator.canShare?.({ files: [file] })) {
-          try {
-            await navigator.share({ files: [file], text: `${label} QR-код` });
-          } catch {}
+    const blob = await svgToPngBlob();
+    if (navigator.share) {
+      try {
+        if (blob && navigator.canShare?.({ files: [new File([blob], "qr.png", { type: "image/png" })] })) {
+          const file = new File([blob], `qr-${label.replace(/\s+/g, "-").toLowerCase()}.png`, { type: "image/png" });
+          await navigator.share({ files: [file], title: `QR-код ${label}` });
         } else {
-          handleDownload();
+          await navigator.share({ title: `QR-код ${label}`, text: `${label}`, url });
         }
-      }, "image/png");
-    };
-    img.src = "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(svgData)));
-  }, [label, handleDownload]);
+      } catch {}
+    } else {
+      handleDownload();
+    }
+  }, [label, url, svgToPngBlob, handleDownload]);
+
+  const handleCopyLink = useCallback(async () => {
+    try {
+      await navigator.clipboard.writeText(url);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      const input = document.createElement("input");
+      input.value = url;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand("copy");
+      document.body.removeChild(input);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  }, [url]);
 
   return (
     <>
@@ -85,7 +102,7 @@ export function SocialQR({ label, url, color, icon }: SocialQRProps) {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.8, opacity: 0 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="bg-white rounded-3xl p-8 flex flex-col items-center max-w-sm w-full"
+              className="bg-white rounded-3xl p-8 flex flex-col items-center max-w-sm w-full relative"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -104,38 +121,27 @@ export function SocialQR({ label, url, color, icon }: SocialQRProps) {
               </div>
 
               <div className="flex flex-col gap-2 w-full">
-                <a
-                  href={`https://wa.me/?text=${encodeURIComponent(`Сканируйте QR-код для перехода в ${label}: ${url}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-white active:opacity-80"
-                  style={{ backgroundColor: "#25D366" }}
-                >
-                  <Share2 className="w-4 h-4" />
-                  Отправить в WhatsApp
-                </a>
-                <a
-                  href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`QR-код ${label}`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-white active:opacity-80"
-                  style={{ backgroundColor: "#229ED9" }}
-                >
-                  <Share2 className="w-4 h-4" />
-                  Отправить в Telegram
-                </a>
-                <a
-                  href={`mailto:?subject=${encodeURIComponent(`QR-код ${label}`)}&body=${encodeURIComponent(`Сканируйте QR-код: ${url}`)}`}
-                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-white active:opacity-80"
-                  style={{ backgroundColor: "#6b7280" }}
-                >
-                  <Share2 className="w-4 h-4" />
-                  Отправить на E-mail
-                </a>
                 <button
-                  onClick={handleDownload}
+                  onClick={handleShare}
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm text-white active:opacity-80"
+                  style={{ backgroundColor: color }}
+                >
+                  <Share2 className="w-4 h-4" />
+                  Поделиться
+                </button>
+
+                <button
+                  onClick={handleCopyLink}
                   className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm border-2 active:opacity-80"
                   style={{ borderColor: color, color }}
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Link2 className="w-4 h-4" />}
+                  {copied ? "Скопировано!" : "Скопировать ссылку"}
+                </button>
+
+                <button
+                  onClick={handleDownload}
+                  className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-semibold text-sm border-2 border-slate-200 text-slate-600 active:opacity-80"
                 >
                   <Download className="w-4 h-4" />
                   Скачать QR-код
