@@ -40,6 +40,19 @@ export function SocialQR({ label, url, color, icon }: SocialQRProps) {
   const handleDownload = useCallback(async () => {
     const blob = await svgToPngBlob();
     if (!blob) return;
+    const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isIOS) {
+      const file = new File([blob], `qr-${label.replace(/\s+/g, "-").toLowerCase()}.png`, { type: "image/png" });
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: `QR-код ${label}` });
+          return;
+        } catch {}
+      }
+      const url = URL.createObjectURL(blob);
+      window.open(url, "_blank");
+      return;
+    }
     const link = document.createElement("a");
     link.download = `qr-${label.replace(/\s+/g, "-").toLowerCase()}.png`;
     link.href = URL.createObjectURL(blob);
