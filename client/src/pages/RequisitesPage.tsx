@@ -35,7 +35,7 @@ const FILES = [
   {
     id: "klm",
     name: "Реквизиты КЛМ",
-    driveId: "1JsKXdGGXsoPMDRL6S0q4r5sW0D-4M2-",
+    driveId: "1oCVDDSuNH3V7aOwgp27I06ZOhh_Zblkr",
   },
   {
     id: "si",
